@@ -1,4 +1,4 @@
--- Luau UI Library Base dengan Animasi Zoom Out & Acrylic Blur
+-- Luau UI Library Base dengan Animasi Zoom Out & Glass Effect
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -23,69 +23,97 @@ function UILibrary:CreateWindow(config)
     screenGui.ResetOnSpawn = false
     screenGui.Parent = PlayerGui
     
-    -- Main Frame (Window) dengan Acrylic Blur
+    -- Main Frame (Window) dengan Glass Effect
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainWindow"
     mainFrame.Size = config.Size
     mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    mainFrame.BackgroundTransparency = 0.3 -- Semi-transparent untuk blur effect
+    mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    mainFrame.BackgroundTransparency = 0.4
     mainFrame.BorderSizePixel = 0
-    mainFrame.ClipsDescendants = false
+    mainFrame.ClipsDescendants = true
     mainFrame.Parent = screenGui
-    
-    -- Blur Effect untuk Acrylic look
-    local blur = Instance.new("BlurEffect")
-    blur.Size = 24
-    blur.Parent = game.Lighting
     
     -- UICorner untuk rounded corners
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = mainFrame
     
-    -- Glass/Acrylic Effect Overlay
-    local glassEffect = Instance.new("Frame")
-    glassEffect.Name = "GlassEffect"
-    glassEffect.Size = UDim2.new(1, 0, 1, 0)
-    glassEffect.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    glassEffect.BackgroundTransparency = 0.95
-    glassEffect.BorderSizePixel = 0
-    glassEffect.ZIndex = 2
-    glassEffect.Parent = mainFrame
+    -- Blur Effect hanya untuk UI (BackgroundBlur)
+    local blurEffect = Instance.new("ImageLabel")
+    blurEffect.Name = "BlurEffect"
+    blurEffect.Size = UDim2.new(1, 0, 1, 0)
+    blurEffect.Position = UDim2.new(0, 0, 0, 0)
+    blurEffect.BackgroundTransparency = 1
+    blurEffect.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
+    blurEffect.ImageTransparency = 0.5
+    blurEffect.ScaleType = Enum.ScaleType.Tile
+    blurEffect.TileSize = UDim2.new(0, 128, 0, 128)
+    blurEffect.ZIndex = 1
+    blurEffect.Parent = mainFrame
+    
+    local blurCorner = Instance.new("UICorner")
+    blurCorner.CornerRadius = UDim.new(0, 12)
+    blurCorner.Parent = blurEffect
+    
+    -- Glass Effect Overlay (shimmer/shine effect)
+    local glassOverlay = Instance.new("Frame")
+    glassOverlay.Name = "GlassOverlay"
+    glassOverlay.Size = UDim2.new(1, 0, 1, 0)
+    glassOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    glassOverlay.BackgroundTransparency = 0.97
+    glassOverlay.BorderSizePixel = 0
+    glassOverlay.ZIndex = 2
+    glassOverlay.Parent = mainFrame
     
     local glassCorner = Instance.new("UICorner")
     glassCorner.CornerRadius = UDim.new(0, 12)
-    glassCorner.Parent = glassEffect
+    glassCorner.Parent = glassOverlay
     
-    -- Border/Stroke untuk Acrylic effect
+    -- Gradient untuk glass effect yang lebih realistic
+    local gradient = Instance.new("UIGradient")
+    gradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.95),
+        NumberSequenceKeypoint.new(0.5, 0.98),
+        NumberSequenceKeypoint.new(1, 0.95)
+    })
+    gradient.Rotation = 45
+    gradient.Parent = glassOverlay
+    
+    -- Border/Stroke untuk Glass effect
     local stroke = Instance.new("UIStroke")
     stroke.Color = Color3.fromRGB(255, 255, 255)
-    stroke.Transparency = 0.85
+    stroke.Transparency = 0.7
     stroke.Thickness = 1.5
     stroke.Parent = mainFrame
     
     -- Shadow effect
+    local shadowHolder = Instance.new("Frame")
+    shadowHolder.Name = "ShadowHolder"
+    shadowHolder.Size = UDim2.new(1, 50, 1, 50)
+    shadowHolder.Position = UDim2.new(0, -25, 0, -25)
+    shadowHolder.BackgroundTransparency = 1
+    shadowHolder.ZIndex = 0
+    shadowHolder.Parent = mainFrame
+    
     local shadow = Instance.new("ImageLabel")
     shadow.Name = "Shadow"
-    shadow.Size = UDim2.new(1, 40, 1, 40)
-    shadow.Position = UDim2.new(0, -20, 0, -20)
+    shadow.Size = UDim2.new(1, 0, 1, 0)
     shadow.BackgroundTransparency = 1
     shadow.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png"
     shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-    shadow.ImageTransparency = 0.7
+    shadow.ImageTransparency = 0.5
     shadow.ScaleType = Enum.ScaleType.Slice
     shadow.SliceCenter = Rect.new(10, 10, 118, 118)
-    shadow.ZIndex = -1
-    shadow.Parent = mainFrame
+    shadow.Parent = shadowHolder
     
-    -- Title Bar dengan Acrylic Blur
+    -- Title Bar dengan Glass Effect
     local titleBar = Instance.new("Frame")
     titleBar.Name = "TitleBar"
     titleBar.Size = UDim2.new(1, 0, 0, 45)
-    titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-    titleBar.BackgroundTransparency = 0.2
+    titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    titleBar.BackgroundTransparency = 0.3
     titleBar.BorderSizePixel = 0
     titleBar.ZIndex = 3
     titleBar.Parent = mainFrame
@@ -96,16 +124,17 @@ function UILibrary:CreateWindow(config)
     
     local titleStroke = Instance.new("UIStroke")
     titleStroke.Color = Color3.fromRGB(255, 255, 255)
-    titleStroke.Transparency = 0.9
+    titleStroke.Transparency = 0.85
     titleStroke.Thickness = 1
+    titleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     titleStroke.Parent = titleBar
     
     -- Mask untuk memotong bagian bawah title bar agar tidak rounded
     local titleMask = Instance.new("Frame")
-    titleMask.Size = UDim2.new(1, 0, 0, 10)
-    titleMask.Position = UDim2.new(0, 0, 1, -10)
-    titleMask.BackgroundColor3 = Color3.fromRGB(35, 35, 50)
-    titleMask.BackgroundTransparency = 0.2
+    titleMask.Size = UDim2.new(1, 0, 0, 12)
+    titleMask.Position = UDim2.new(0, 0, 1, -12)
+    titleMask.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    titleMask.BackgroundTransparency = 0.3
     titleMask.BorderSizePixel = 0
     titleMask.ZIndex = 3
     titleMask.Parent = titleBar
@@ -113,11 +142,12 @@ function UILibrary:CreateWindow(config)
     -- Animasi Zoom Out saat window muncul
     mainFrame.Size = UDim2.new(0, 0, 0, 0)
     mainFrame.BackgroundTransparency = 1
-    glassEffect.BackgroundTransparency = 1
+    glassOverlay.BackgroundTransparency = 1
     titleBar.BackgroundTransparency = 1
     titleMask.BackgroundTransparency = 1
     stroke.Transparency = 1
     titleStroke.Transparency = 1
+    blurEffect.ImageTransparency = 1
     
     local tweenInfo = TweenInfo.new(
         config.AnimationDuration,
@@ -130,27 +160,31 @@ function UILibrary:CreateWindow(config)
     })
     
     local transparencyTween = TweenService:Create(mainFrame, tweenInfo, {
-        BackgroundTransparency = 0.3
+        BackgroundTransparency = 0.4
     })
     
-    local glassTween = TweenService:Create(glassEffect, tweenInfo, {
-        BackgroundTransparency = 0.95
+    local glassTween = TweenService:Create(glassOverlay, tweenInfo, {
+        BackgroundTransparency = 0.97
     })
     
     local titleTween = TweenService:Create(titleBar, tweenInfo, {
-        BackgroundTransparency = 0.2
+        BackgroundTransparency = 0.3
     })
     
     local titleMaskTween = TweenService:Create(titleMask, tweenInfo, {
-        BackgroundTransparency = 0.2
+        BackgroundTransparency = 0.3
     })
     
     local strokeTween = TweenService:Create(stroke, tweenInfo, {
-        Transparency = 0.85
+        Transparency = 0.7
     })
     
     local titleStrokeTween = TweenService:Create(titleStroke, tweenInfo, {
-        Transparency = 0.9
+        Transparency = 0.85
+    })
+    
+    local blurTween = TweenService:Create(blurEffect, tweenInfo, {
+        ImageTransparency = 0.5
     })
     
     sizeTween:Play()
@@ -160,6 +194,7 @@ function UILibrary:CreateWindow(config)
     titleMaskTween:Play()
     strokeTween:Play()
     titleStrokeTween:Play()
+    blurTween:Play()
     
     -- Fungsi untuk menutup window dengan animasi
     function window:Close()
@@ -173,11 +208,20 @@ function UILibrary:CreateWindow(config)
             BackgroundTransparency = 1
         })
         
+        local closeGlassTween = TweenService:Create(glassOverlay, closeInfo, {
+            BackgroundTransparency = 1
+        })
+        
+        local closeStrokeTween = TweenService:Create(stroke, closeInfo, {
+            Transparency = 1
+        })
+        
         closeSizeTween:Play()
         closeTransparencyTween:Play()
+        closeGlassTween:Play()
+        closeStrokeTween:Play()
         
         closeSizeTween.Completed:Connect(function()
-            blur:Destroy()
             screenGui:Destroy()
         end)
     end
@@ -220,7 +264,6 @@ function UILibrary:CreateWindow(config)
     window.ScreenGui = screenGui
     window.MainFrame = mainFrame
     window.TitleBar = titleBar
-    window.Blur = blur
     
     return window
 end
